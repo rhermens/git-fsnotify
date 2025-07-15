@@ -44,16 +44,16 @@ fn main() {
     start_fs_watch(args.path, tx.clone());
 
     for e in rx {
-        println!("Received event: {:?}", e);
+        tracing::trace!("Received event: {:?}", e);
         match e {
             EventKind::Tick(_) => {
-                println!("Received tick event, pulling changes...");
+                tracing::info!("Pulling changes");
                 fast_forward(&repo, &mut fetch_options);
             }
             EventKind::Fs(_) => {
-                println!("Received file system event, committing changes...");
+                tracing::info!("Committing changes");
                 if let Err(err) = push_worktree(&repo, &mut push_options) {
-                    eprintln!("Error during commit: {:?}", err);
+                    tracing::error!("Error during commit: {:?}", err);
                 }
             }
         }
@@ -64,7 +64,6 @@ fn start_pull_interval(tx: mpsc::Sender<EventKind>) {
     std::thread::spawn(move || {
         loop {
             std::thread::sleep(Duration::from_secs(60));
-            println!("Sending interval tick");
             tx.send(EventKind::Tick(()))
                 .expect("Failed to send interval tick");
         }
@@ -90,10 +89,11 @@ fn start_fs_watch(path: PathBuf, tx: mpsc::Sender<EventKind>) {
                 .count()
                 == 0
             {
-                println!("No relevant file system changes detected, skipping commit.");
+                tracing::debug!("No relevant file system changes detected, skipping commit.");
                 continue;
             }
-            println!("File system change detected, committing...");
+
+            tracing::debug!("Fs change, broadcasting event");
 
             tx.send(EventKind::Fs(()))
                 .expect("Failed to send file system event");

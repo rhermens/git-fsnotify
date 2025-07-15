@@ -1,5 +1,5 @@
 [package]
-name = "fsnotify-git"
+name = "git-fsnotify"
 version = "0.1.0"
 edition = "2024"
 
@@ -8,3 +8,4 @@ clap = { version = "4.5.40", features = ["derive"] }
 git2 = { version = "0.20.2", default-features = false, features = ["ssh"] }
 notify = "8.1.0"
 notify-debouncer-full = "0.5.0"
+tracing = "0.1.41"
