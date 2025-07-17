@@ -6,16 +6,20 @@ pub fn push_worktree(repo: &Repository, push_options: &mut PushOptions) -> Resul
     let sig = repo.signature().expect("Failed to get commited signature");
     let status = repo.statuses(Some(
         StatusOptions::new()
+            .include_untracked(true)
             .include_ignored(false)
             .include_unmodified(false)
             .include_unreadable(false),
     ))?;
+
+    tracing::info!("changes: {:?}", status.iter().len());
     if status.iter().len() == 0 {
         return Ok(());
     }
 
     let mut index = repo.index()?;
     for entry in status.iter() {
+        tracing::info!("{:?}", entry.path());
         match entry.status() {
             Status::WT_NEW | Status::WT_MODIFIED | Status::INDEX_MODIFIED | Status::INDEX_NEW => {
                 index.add_path(Path::new(entry.path().expect("Failed to get status path")))?;

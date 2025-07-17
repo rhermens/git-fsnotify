@@ -8,6 +8,7 @@ use clap::Parser;
 use git2::{FetchOptions, PushOptions, RemoteCallbacks, Repository};
 use notify::RecursiveMode;
 use notify_debouncer_full::new_debouncer;
+use tracing::Level;
 
 use crate::{fastforward::fast_forward, ident::credentials_callback, push::push_worktree};
 
@@ -26,6 +27,9 @@ enum EventKind {
 
 fn main() {
     let args = Args::parse();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::INFO)
+        .init();
 
     let (tx, rx) = mpsc::channel();
     let repo = Repository::open(&args.path).expect("Failed to open repository");

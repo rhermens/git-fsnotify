@@ -8,7 +8,7 @@ pub fn fast_forward(repo: &Repository, fetch_options: &mut FetchOptions) {
         .expect("Failed to fetch remote");
 
     repo.fetchhead_foreach(|_ref_name, _remote_url, oid, _is_merge| {
-        println!("Checking fast-forward for {}", oid);
+        tracing::info!("Checking fast-forward for {}", oid);
 
         let commit = repo
             .find_annotated_commit(oid.to_owned())
@@ -31,7 +31,7 @@ pub fn fast_forward(repo: &Repository, fetch_options: &mut FetchOptions) {
         current_head
             .set_target(oid.to_owned(), "Fast-forwarded")
             .expect("Failed to set target");
-        println!("Fast-forwarded to {}", oid);
+        tracing::info!("Fast-forwarded to {}", oid);
         true
     })
     .expect("Failed to fetchhead foreach");

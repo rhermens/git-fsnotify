@@ -9,3 +9,4 @@ git2 = { version = "0.20.2", default-features = false, features = ["ssh"] }
 notify = "8.1.0"
 notify-debouncer-full = "0.5.0"
 tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
