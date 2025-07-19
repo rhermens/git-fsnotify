@@ -20,14 +20,21 @@ pub fn push_worktree(repo: &Repository, push_options: &mut PushOptions) -> Resul
     let mut index = repo.index()?;
     for entry in status.iter() {
         tracing::info!("{:?}", entry.path());
-        match entry.status() {
+        if let Err(err) = match entry.status() {
             Status::WT_NEW | Status::WT_MODIFIED | Status::INDEX_MODIFIED | Status::INDEX_NEW => {
-                index.add_path(Path::new(entry.path().expect("Failed to get status path")))?;
+                index.add_path(Path::new(entry.path().expect("Failed to get status path")))
             }
             Status::WT_DELETED | Status::INDEX_DELETED => {
-                index.remove_path(Path::new(entry.path().expect("Failed to get status path")))?;
+                index.remove_path(Path::new(entry.path().expect("Failed to get status path")))
             }
             _ => continue,
+        } {
+            tracing::error!(
+                "Failed to add/remove path: {:?}, error: {:?}",
+                entry.path(),
+                err
+            );
+            continue;
         }
     }
 
