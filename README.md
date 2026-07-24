@@ -1,6 +1,6 @@
 # git-watch
 
-`git-watch` periodically synchronizes a Git worktree with `origin`.
+`git-watch` periodically synchronizes a Git worktree with `origin`. Each synchronization runs in a child process so a stuck Git or SSH operation can be terminated without wedging the supervisor.
 
 It is intended for small personal repositories where automatic syncing is acceptable, such as notes or configuration repos.
 
@@ -31,7 +31,7 @@ Use it only on repositories where automatic staging, committing, and pushing are
 ## Usage
 
 ```sh
-git-watch --path ~/Notes --log-level info --interval 60
+git-watch --path ~/Notes --log-level info --interval 60 --timeout 30
 ```
 
 CLI options:
@@ -43,6 +43,7 @@ Options:
   -p, --path <PATH>
       --log-level <LOG_LEVEL>  [default: INFO]
       --interval <INTERVAL>    [default: 60]
+      --timeout <TIMEOUT>      [default: 30]
   -h, --help                   Print help
   -V, --version                Print version
 ```
@@ -50,6 +51,8 @@ Options:
 `--path` supports shell-style expansion through `shellexpand`, so values like `~`, `~/repo`, and `$HOME/repo` work even when the caller does not expand them first.
 
 `--interval` controls how often, in seconds, `git-watch` fetches, fast-forwards, stages changes, commits, and pushes. It defaults to `60`.
+
+`--timeout` limits each synchronization child process to the given number of seconds. A child that exceeds the timeout is killed and the supervisor tries again after the next interval. It defaults to `30`.
 
 Valid log levels are:
 
@@ -107,6 +110,7 @@ Configure one or more services:
       path = "~/Notes";
       logLevel = "info";
       interval = 60;
+      timeout = 30;
     };
 
     dotfiles = {
@@ -125,6 +129,7 @@ Options per service:
 - `path`: repository path to sync. May be a Nix path or string such as `"~/Notes"`.
 - `logLevel`: one of `trace`, `debug`, `info`, `warn`, or `error`; defaults to `"info"`.
 - `interval`: sync interval in seconds; defaults to `60`.
+- `timeout`: maximum duration of each sync child process in seconds; defaults to `30`.
 - `sshAuthSock`: SSH agent socket path to pass to the service. When unset, `git-watch` inherits the user's `SSH_AUTH_SOCK` environment variable; set this only to force a specific socket path.
 
 On Linux, this creates systemd user services named:

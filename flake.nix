@@ -29,7 +29,8 @@
             exec ${git-watch}/bin/git-watch \
               --path ${lib.escapeShellArg (toString service.path)} \
               --log-level ${lib.escapeShellArg service.logLevel} \
-              --interval ${toString service.interval}
+              --interval ${toString service.interval} \
+              --timeout ${toString service.timeout}
           '';
         in
         {
@@ -55,6 +56,12 @@
                     type = lib.types.ints.positive;
                     default = 60;
                     description = "Sync interval in seconds";
+                  };
+
+                  timeout = lib.mkOption {
+                    type = lib.types.ints.positive;
+                    default = 30;
+                    description = "Maximum duration in seconds for each sync child process";
                   };
 
                   sshAuthSock = lib.mkOption {
@@ -122,6 +129,7 @@
           git-watch = craneLib.buildPackage {
             src = craneLib.cleanCargoSource ./.;
             nativeBuildInputs = [ pkgs.pkg-config pkgs.openssl ];
+            nativeCheckInputs = [ pkgs.git ];
           };
         in
         {
